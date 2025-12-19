@@ -23,7 +23,7 @@ src/pipelines/data_pipeline.py
 
 ### 3.1 Missing Values Handling
 
-| Column | Strategy | Reason |
+| Column | Strategy | Reason |  
 |------|---------|-------|
 | Age | Median | Robust to outliers |
 | Fare | Median | Skewed distribution |

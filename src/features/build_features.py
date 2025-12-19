@@ -5,7 +5,6 @@ import numpy as np
 
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from sklearn.ensemble import RandomForestClassifier
 
 from feature_selector import select_features
 
@@ -14,25 +13,19 @@ DATA_PATH = os.path.join(BASE_DIR, "data", "processed", "final.csv")
 FEATURE_DIR = os.path.join(BASE_DIR, "features")
 FEATURE_LIST_PATH = os.path.join(FEATURE_DIR, "feature_list.json")
 
+os.makedirs(FEATURE_DIR, exist_ok=True)
+
 def load_data():
     if not os.path.exists(DATA_PATH):
         raise FileNotFoundError("Processed data not found")
 
-    df = pd.read_csv(DATA_PATH)
-    return df
+    return pd.read_csv(DATA_PATH)
 
 def engineer_features(df):
-    # Drop non-useful text columns
-    drop_cols = ["Name", "Ticket"]
-    for col in drop_cols:
-        if col in df.columns:
-            df.drop(columns=col, inplace=True)
-
-    # Encode categorical variables
+    df = df.drop(columns=["Name", "Ticket"], errors="ignore")
     df["Sex"] = df["Sex"].map({"male": 0, "female": 1})
     df = pd.get_dummies(df, columns=["Embarked"], drop_first=True)
 
-    # Feature generation (10+ features)
     df["FamilySize"] = df["SibSp"] + df["Parch"] + 1
     df["IsAlone"] = (df["FamilySize"] == 1).astype(int)
     df["FarePerPerson"] = df["Fare"] / df["FamilySize"]
@@ -51,11 +44,15 @@ def split_and_scale(df):
     y = df["Survived"]
 
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42, stratify=y
+        X,
+        y,
+        test_size=0.2,
+        random_state=42,
+        stratify=y
     )
 
     scaler = StandardScaler()
-    numeric_cols = X_train.select_dtypes(include="number").columns
+    numeric_cols = X_train.select_dtypes(include=["int64", "float64"]).columns
 
     X_train[numeric_cols] = scaler.fit_transform(X_train[numeric_cols])
     X_test[numeric_cols] = scaler.transform(X_test[numeric_cols])
@@ -80,15 +77,23 @@ def main():
     X_train, X_test, y_train, y_test = split_and_scale(df)
 
     selected_features = select_features(X_train, y_train)
+
     X_train = X_train[selected_features]
     X_test = X_test[selected_features]
 
-    save_feature_list(list(df.drop("Survived", axis=1).columns), selected_features)
+    X_train.to_csv(os.path.join(FEATURE_DIR, "X_train.csv"), index=False)
+    X_test.to_csv(os.path.join(FEATURE_DIR, "X_test.csv"), index=False)
+    y_train.to_csv(os.path.join(FEATURE_DIR, "y_train.csv"), index=False)
+    y_test.to_csv(os.path.join(FEATURE_DIR, "y_test.csv"), index=False)
 
-    print("Feature engineering pipeline completed")
+    save_feature_list(
+        all_features=list(X_train.columns),
+        selected_features=selected_features
+    )
+
+    print("Feature engineering pipeline completed successfully")
     print(f"X_train shape: {X_train.shape}")
     print(f"X_test shape: {X_test.shape}")
-
 
 if __name__ == "__main__":
     main()
