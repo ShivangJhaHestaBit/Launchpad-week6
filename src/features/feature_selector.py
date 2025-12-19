@@ -21,15 +21,5 @@ def select_features(X, y, top_k=15):
         model.feature_importances_,
         index=X.columns
     ).sort_values(ascending=False)
-    
-    plt.figure(figsize=(10, 6))
-    importances.head(top_k).sort_values().plot(kind="barh")
-    plt.title("Top Feature Importances")
-    plt.xlabel("Importance Score")
-    plt.tight_layout()
-
-    plot_path = os.path.join(PLOTS_DIR, "feature_importance.png")
-    plt.savefig(plot_path)
-    plt.close()
 
     return list(importances.head(top_k).index)

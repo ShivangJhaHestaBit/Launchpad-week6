@@ -2,37 +2,37 @@
     "total_features": 15,
     "selected_features_count": 15,
     "all_features": [
-        "Sex",
-        "PassengerId",
         "Age",
+        "Sex",
         "Fare",
         "FarePerPerson",
         "MaleLowerClass",
         "FemaleUpperClass",
-        "Pclass",
         "FamilySize",
-        "IsLowerClass",
+        "Pclass",
         "SibSp",
         "Embarked_S",
         "Parch",
+        "IsLowerClass",
+        "IsChild",
         "HighFare",
-        "IsChild"
+        "IsUpperClass"
     ],
     "selected_features": [
-        "Sex",
-        "PassengerId",
         "Age",
+        "Sex",
         "Fare",
         "FarePerPerson",
         "MaleLowerClass",
         "FemaleUpperClass",
-        "Pclass",
         "FamilySize",
-        "IsLowerClass",
+        "Pclass",
         "SibSp",
         "Embarked_S",
         "Parch",
+        "IsLowerClass",
+        "IsChild",
         "HighFare",
-        "IsChild"
+        "IsUpperClass"
     ]
 }

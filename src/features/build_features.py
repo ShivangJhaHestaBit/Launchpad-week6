@@ -22,7 +22,7 @@ def load_data():
     return pd.read_csv(DATA_PATH)
 
 def engineer_features(df):
-    df = df.drop(columns=["Name", "Ticket"], errors="ignore")
+    df = df.drop(columns=["Name", "Ticket", "PassengerId", "Cabin"], errors="ignore")
     df["Sex"] = df["Sex"].map({"male": 0, "female": 1})
     df = pd.get_dummies(df, columns=["Embarked"], drop_first=True)
 
