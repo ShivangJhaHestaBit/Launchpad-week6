@@ -6,9 +6,10 @@ import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import roc_auc_score
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 FEATURE_DIR = os.path.join(BASE_DIR, "features")
 MODEL_DIR = os.path.join(BASE_DIR, "models")
 TUNING_DIR = os.path.join(BASE_DIR, "tuning")
@@ -29,17 +30,24 @@ def load_data():
     return X_train, X_test, y_train, y_test
 
 def tune_model(X_train, y_train):
+    """
+    Tune RandomForest inside a Pipeline
+    (scaler included for consistency, not necessity)
+    """
+    pipeline = Pipeline([
+        ("scaler", StandardScaler()),
+        ("model", RandomForestClassifier(random_state=42))
+    ])
+
     param_grid = {
-        "n_estimators": [100, 200],
-        "max_depth": [None, 5, 10],
-        "min_samples_split": [2, 5],
-        "min_samples_leaf": [1, 2]
+        "model__n_estimators": [100, 200],
+        "model__max_depth": [None, 5, 10],
+        "model__min_samples_split": [2, 5],
+        "model__min_samples_leaf": [1, 2]
     }
 
-    model = RandomForestClassifier(random_state=42)
-
     grid = GridSearchCV(
-        model,
+        pipeline,
         param_grid,
         cv=5,
         scoring="roc_auc",
@@ -51,13 +59,10 @@ def tune_model(X_train, y_train):
 
 def main():
     X_train, X_test, y_train, y_test = load_data()
-
     grid = tune_model(X_train, y_train)
-
     best_model = grid.best_estimator_
     y_pred_proba = best_model.predict_proba(X_test)[:, 1]
     roc_auc = roc_auc_score(y_test, y_pred_proba)
-
     joblib.dump(best_model, os.path.join(MODEL_DIR, "best_model.pkl"))
 
     results = {
@@ -70,7 +75,8 @@ def main():
         json.dump(results, f, indent=4)
 
     print("Hyperparameter tuning complete")
-    print("Best ROC-AUC:", roc_auc)
+    print("Best CV ROC-AUC:", grid.best_score_)
+    print("Test ROC-AUC:", roc_auc)
 
 if __name__ == "__main__":
     main()
